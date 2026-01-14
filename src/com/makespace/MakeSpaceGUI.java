@@ -1,34 +1,16 @@
-package main.java.com.makespace;
+package com.makespace;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.event.MouseEvent;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.Cursor;
-import java.awt.event.MouseAdapter;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTextArea;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 public class MakeSpaceGUI {
-    
+
     private JFrame frame;
     private JTextArea outputArea;
     private MakeSpaceScheduler scheduler;
@@ -36,25 +18,29 @@ public class MakeSpaceGUI {
     private JComboBox<String> hourComboEnd, minuteComboEnd;
     private JSpinner capacitySpinner;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            try{
-                new MakeSpaceGUI().initialize();
-            } catch (Exception e){
+            try {
+                new MakeSpaceGUI();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    private void initialize(){
+    // FIXED: Constructor now calls initialize() method
+    public MakeSpaceGUI() {
         scheduler = new MakeSpaceScheduler();
+        initialize(); // THIS LINE WAS MISSING!
+    }
 
-        frame =  new JFrame("Make space Ltd. - Meeting Room Scheduler");
+    private void initialize() {
+        frame = new JFrame("Make Space Ltd. - Meeting Room Scheduler");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 700);
         frame.setLayout(new BorderLayout(10, 10));
 
-        // Add padding around the content
+        // Add padding around the frame
         ((JPanel) frame.getContentPane()).setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         createHeaderPanel();
@@ -66,7 +52,7 @@ public class MakeSpaceGUI {
         frame.setVisible(true);
     }
 
-    private void createHeaderPanel(){
+    private void createHeaderPanel() {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BorderLayout());
         headerPanel.setBackground(new Color(44, 62, 80));
@@ -81,51 +67,56 @@ public class MakeSpaceGUI {
         frame.add(headerPanel, BorderLayout.NORTH);
     }
 
-    private void createInputPanel(){
+    private void createInputPanel() {
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout());
+        inputPanel.setLayout(new GridBagLayout());
         inputPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(52, 152, 219), 2), "Meeting Booking",
-            TitledBorder.LEFT,
-            TitledBorder.TOP,
-            new Font("Segoe UI", Font.BOLD, 14),
-            new Color(42, 62, 80)
-        ));
+                BorderFactory.createLineBorder(new Color(52, 152, 219), 2),
+                "Meeting Booking",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14),
+                new Color(44, 62, 80)));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        //start time
-        gbc.gridx = 0; gbc.gridy = 0;
+        // Start Time
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         inputPanel.add(new JLabel("Start Time:"), gbc);
 
         JPanel startTimePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         hourComboStart = new JComboBox<>(getHourOptions());
-        minuteComboStart = new JComboBox<>(new String[]{"00", "15", "30", "45"});
+        minuteComboStart = new JComboBox<>(new String[] { "00", "15", "30", "45" });
         startTimePanel.add(hourComboStart);
         startTimePanel.add(new JLabel(":"));
         startTimePanel.add(minuteComboStart);
 
-        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridx = 1;
+        gbc.gridy = 0;
         inputPanel.add(startTimePanel, gbc);
 
-        //end time
-        gbc.gridx = 0; gbc.gridy = 1;
+        // End Time
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         inputPanel.add(new JLabel("End Time:"), gbc);
 
         JPanel endTimePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         hourComboEnd = new JComboBox<>(getHourOptions());
-        minuteComboEnd = new JComboBox<>(new String[]{"00", "15", "30", "45"});
+        minuteComboEnd = new JComboBox<>(new String[] { "00", "15", "30", "45" });
         endTimePanel.add(hourComboEnd);
         endTimePanel.add(new JLabel(":"));
         endTimePanel.add(minuteComboEnd);
 
-        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridy = 1;
         inputPanel.add(endTimePanel, gbc);
 
-        //capacity
-        gbc.gridx = 0; gbc.gridy = 2;
+        // Capacity
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         inputPanel.add(new JLabel("Number of People:"), gbc);
 
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(2, 2, 20, 1);
@@ -134,26 +125,28 @@ public class MakeSpaceGUI {
         capacitySpinner.setEditor(editor);
         capacitySpinner.setPreferredSize(new Dimension(100, 30));
 
-        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridx = 1;
+        gbc.gridy = 2;
         inputPanel.add(capacitySpinner, gbc);
 
-        //submit button
+        // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
         JButton bookButton = createStyledButton("Book Meeting Room", new Color(46, 204, 113));
         bookButton.addActionListener(e -> bookMeeting());
 
-        JButton vacancyButton = createStyledButton("Check Room Vacancy", new Color(52, 152, 219));
+        JButton vacancyButton = createStyledButton("Check Vacancy", new Color(52, 152, 219));
         vacancyButton.addActionListener(e -> checkVacancy());
 
-        JButton clearButton = createStyledButton("Clear Output", new Color(231, 76, 60));
+        JButton clearButton = createStyledButton("Clear", new Color(231, 76, 60));
         clearButton.addActionListener(e -> clearOutput());
 
         buttonPanel.add(bookButton);
         buttonPanel.add(vacancyButton);
         buttonPanel.add(clearButton);
 
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(20, 10, 10, 10);
         inputPanel.add(buttonPanel, gbc);
@@ -164,28 +157,27 @@ public class MakeSpaceGUI {
     private void createOutputPanel() {
         JPanel outputPanel = new JPanel(new BorderLayout());
         outputPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(155, 89, 182), 2),
-            "Output",
-            TitledBorder.LEFT,
-            TitledBorder.TOP,
-            new Font("Segoe UI", Font.BOLD, 14),
-            new Color(44, 62, 80)
-        ));
-        
+                BorderFactory.createLineBorder(new Color(155, 89, 182), 2),
+                "Output",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14),
+                new Color(44, 62, 80)));
+
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         outputArea.setLineWrap(true);
         outputArea.setWrapStyleWord(true);
         outputArea.setBackground(new Color(236, 240, 241));
-        
+
         JScrollPane scrollPane = new JScrollPane(outputArea);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
+
         outputPanel.add(scrollPane, BorderLayout.CENTER);
         frame.add(outputPanel, BorderLayout.CENTER);
     }
-    
+
     private void createRoomInfoPanel() {
         JPanel roomPanel = new JPanel();
         roomPanel.setLayout(new GridLayout(3, 1, 5, 5));
@@ -264,23 +256,22 @@ public class MakeSpaceGUI {
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(bgColor.darker(), 2),
-            BorderFactory.createEmptyBorder(10, 20, 10, 20)
-        ));
+                BorderFactory.createLineBorder(bgColor.darker(), 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(bgColor.brighter());
             }
-            
+
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBackground(bgColor);
             }
         });
-        
+
         return button;
     }
 
@@ -338,17 +329,17 @@ public class MakeSpaceGUI {
     }
 
     private void showSuccessDialog(String title, String message) {
-        JOptionPane.showMessageDialog(frame, message, title, 
-            JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title,
+                JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     private void showErrorDialog(String title, String message) {
-        JOptionPane.showMessageDialog(frame, message, title, 
-            JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title,
+                JOptionPane.ERROR_MESSAGE);
     }
-    
+
     private void showInfoDialog(String title, String message) {
-        JOptionPane.showMessageDialog(frame, message, title, 
-            JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title,
+                JOptionPane.WARNING_MESSAGE);
     }
-} 
+}

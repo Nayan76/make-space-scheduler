@@ -1,4 +1,4 @@
-package main.java.com.makespace;
+package com.makespace;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -206,5 +206,27 @@ public class MakeSpaceScheduler {
             bufferTimes.add(buffer[0].toString() + " - " + buffer[1].toString());
         }
         return bufferTimes;
+    }
+
+    public void testRoomAllocation() {
+        System.out.println("=== Testing Room Allocation ===");
+
+        // Clear any existing bookings
+        initializeRooms();
+
+        // Test 1: 3 people should get C-Cave
+        String result1 = processBooking("10:00", "11:00", 3);
+        System.out.println("Test 1 - 3 people @ 10-11: " + result1 +
+                " (Expected: C-Cave, Got: " + result1 + ")");
+
+        // Test 2: Another 3 people at same time should get D-Tower (C-Cave booked)
+        String result2 = processBooking("10:00", "11:00", 3);
+        System.out.println("Test 2 - 3 people @ 10-11: " + result2 +
+                " (Expected: D-Tower, Got: " + result2 + ")");
+
+        // Test 3: 2 people at different time should get C-Cave
+        String result3 = processBooking("11:00", "12:00", 2);
+        System.out.println("Test 3 - 2 people @ 11-12: " + result3 +
+                " (Expected: C-Cave, Got: " + result3 + ")");
     }
 }

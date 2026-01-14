@@ -1,4 +1,4 @@
-package main.java.com.makespace.models;
+package com.makespace.models;
 import java.time.LocalTime;
 
 public class Room {
